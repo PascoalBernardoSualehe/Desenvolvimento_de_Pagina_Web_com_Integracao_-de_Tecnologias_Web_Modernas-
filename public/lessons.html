@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudo de Português - Seleção de Tópicos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Estudo de Português</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Início</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="materials.html">Materiais</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="admin.html">Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="logout()">Sair</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h2>Escolha um Tópico</h2>
+    <div class="mt-4">
+      <div class="level-section">
+        <h3>Tópicos do Nível Inicial</h3>
+        <div class="row" id="topicsInicial"></div>
+      </div>
+      <div class="level-section">
+        <h3>Tópicos do Nível Intermédio</h3>
+        <div class="row" id="topicsIntermedio"></div>
+      </div>
+      <div class="level-section">
+        <h3>Tópicos do Nível Avançado</h3>
+        <div class="row" id="topicsAvancado"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="feedbackModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Feedback</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="feedbackMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/socket.io@4.5.0/client-dist/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:3000');
+    const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+
+    function showFeedback(message, isError = false) {
+      document.getElementById('feedbackMessage').textContent = message;
+      document.getElementById('feedbackMessage').style.color = isError ? 'red' : 'black';
+      feedbackModal.show();
+    }
+
+    async function logout() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        await fetch('/api/users/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user.username })
+        });
+        socket.emit('userLogout', { userId: user.id, username: user.username });
+      }
+      localStorage.removeItem('user');
+      localStorage.removeItem('selectedTopic');
+      showFeedback('Saindo...');
+      setTimeout(() => window.location.href = 'login.html', 1000);
+    }
+
+    async function loadTopics() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        showFeedback('Por favor, faça login primeiro.', true);
+        setTimeout(() => window.location.href = 'login.html', 1000);
+        return;
+      }
+
+      const topicConfig = {
+        inicial: ['gramática', 'leitura'],
+        intermédio: ['vocabulário', 'gramática'],
+        avançado: ['leitura', 'exercícios']
+      };
+
+      const topicContainers = {
+        inicial: document.getElementById('topicsInicial'),
+        intermédio: document.getElementById('topicsIntermedio'),
+        avançado: document.getElementById('topicsAvancado')
+      };
+
+      try {
+        const levels = ['inicial', 'intermédio', 'avançado'];
+        for (const level of levels) {
+          const response = await fetch(`/api/materials?level=${level}`);
+          const materials = await response.json();
+          const availableTopics = [...new Set(materials.flatMap(m => m.topics))];
+          const topics = topicConfig[level].filter(t => availableTopics.includes(t));
+          const container = topicContainers[level];
+          container.innerHTML = '';
+
+          if (topics.length === 0) {
+            container.innerHTML = '<p>Nenhum tópico disponível para este nível.</p>';
+            continue;
+          }
+
+          topics.forEach(topic => {
+            const isUserLevel = user.level === level;
+            const topicCard = `
+              <div class="col-md-4 mb-3">
+                <div class="card ${isUserLevel ? '' : 'card-disabled'}">
+                  <div class="card-body">
+                    <h5 class="card-title">${topic.charAt(0).toUpperCase() + topic.slice(1)}</h5>
+                    <button class="btn btn-primary" 
+                            onclick="${isUserLevel ? `selectTopic('${topic}')` : ''}" 
+                            ${isUserLevel ? '' : 'disabled'}>
+                      ${isUserLevel ? 'Selecionar' : 'Indisponível'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+            container.innerHTML += topicCard;
+          });
+        }
+      } catch (error) {
+        showFeedback('Erro ao carregar tópicos: ' + error.message, true);
+      }
+    }
+
+    function selectTopic(topic) {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        showFeedback('Por favor, faça login primeiro.', true);
+        setTimeout(() => window.location.href = 'login.html', 1000);
+        return;
+      }
+      localStorage.setItem('selectedTopic', topic);
+      socket.emit('selectTopic', { userId: user.id, username: user.username, topic });
+      showFeedback(`Tópico "${topic}" selecionado! Redirecionando...`);
+      setTimeout(() => window.location.href = 'materials.html', 1000);
+    }
+
+    loadTopics();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc05bfd83673a5',t:'MTc0NzI0Mjc2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc65dedc5b740c',t:'MTc0NzI0NjcwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fcff74add3c6ca',t:'MTc0NzI1Mjk5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

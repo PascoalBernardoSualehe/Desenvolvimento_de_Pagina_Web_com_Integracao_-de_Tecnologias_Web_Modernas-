@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudo de Português - Chat de Dúvidas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Estudo de Português</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="logout()">Sair</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h2>Chat de Dúvidas</h2>
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5 class="card-title">Material: <span id="materialTitle"></span></h5>
+        <div id="chatMessages" class="mb-3" style="max-height: 300px; overflow-y: auto;"></div>
+        <form id="chatForm">
+          <div class="mb-3">
+            <label for="message" class="form-label">Sua Dúvida</label>
+            <textarea class="form-control" id="message" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="feedbackModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Feedback</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="feedbackMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/socket.io@4.5.0/client-dist/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:3000');
+    const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+
+    function showFeedback(message, isError = false) {
+      document.getElementById('feedbackMessage').textContent = message;
+      document.getElementById('feedbackMessage').style.color = isError ? 'red' : 'black';
+      feedbackModal.show();
+    }
+
+    function logout() {
+      localStorage.removeItem('user');
+      localStorage.removeItem('selectedTopic');
+      localStorage.removeItem('selectedMaterial');
+      showFeedback('Saindo...');
+      setTimeout(() => window.location.href = 'login.html', 1000);
+    }
+
+    async function initializeChat() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const material = JSON.parse(localStorage.getItem('selectedMaterial'));
+      const topic = localStorage.getItem('selectedTopic');
+
+      if (!user || !material || !topic) {
+        showFeedback('Usuário, material ou tópico não encontrado.', true);
+        setTimeout(() => window.location.href = 'login.html', 1000);
+        return;
+      }
+
+      document.getElementById('materialTitle').textContent = material.title;
+
+      try {
+        const response = await fetch('/api/doubts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            materialId: material.id,
+            topic,
+            userLevel: user.level
+          })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          showFeedback('Erro ao iniciar o chat.', true);
+          return;
+        }
+
+        socket.emit('joinDoubtChat', {
+          doubtId: result.doubtId,
+          userId: user.id,
+          materialId: material.id,
+          topic
+        });
+
+        socket.on('chatHistory', (messages) => {
+          const chatMessages = document.getElementById('chatMessages');
+          chatMessages.innerHTML = '';
+          messages.forEach(msg => appendMessage(msg));
+        });
+
+        socket.on('doubtMessage', (msg) => {
+          appendMessage(msg);
+        });
+      } catch (err) {
+        showFeedback(`Erro ao iniciar o chat: ${err.message}`, true);
+      }
+    }
+
+    function appendMessage(msg) {
+      const chatMessages = document.getElementById('chatMessages');
+      const sender = msg.sender === 'user' ? 'Você' : msg.sender === 'bot' ? 'Bot' : 'Admin';
+      const messageElement = `
+        <div class="mb-2">
+          <strong>${sender} (${new Date(msg.timestamp).toLocaleTimeString()}):</strong> ${msg.message}
+        </div>
+      `;
+      chatMessages.innerHTML += messageElement;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    document.getElementById('chatForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = document.getElementById('message').value.trim();
+      if (!message) return;
+
+      const material = JSON.parse(localStorage.getItem('selectedMaterial'));
+      const user = JSON.parse(localStorage.getItem('user'));
+      const topic = localStorage.getItem('selectedTopic');
+
+      try {
+        const response = await fetch('/api/doubts');
+        const doubts = await response.json();
+        const doubt = doubts.find(d => d.userId === user.id && d.materialId === material.id && d.topic === topic);
+        if (!doubt) {
+          showFeedback('Chat não encontrado.', true);
+          return;
+        }
+
+        socket.emit('doubtMessage', { doubtId: doubt.id, message });
+        showFeedback('Mensagem enviada!');
+        document.getElementById('message').value = '';
+      } catch (err) {
+        showFeedback(`Erro ao enviar mensagem: ${err.message}`, true);
+      }
+    });
+
+    window.onload = initializeChat;
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc07624c4c73a5',t:'MTc0NzI0MjgzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc6360d818740c',t:'MTc0NzI0NjYwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fcfdd88a774eb9',t:'MTc0NzI1MjkyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

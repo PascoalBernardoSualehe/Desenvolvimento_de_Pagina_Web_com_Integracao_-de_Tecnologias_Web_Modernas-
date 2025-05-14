@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudo de Português - Materiais</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Estudo de Português</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Início</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="lessons.html">Tópicos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="admin.html">Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="logout()">Sair</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h2>Materiais Disponíveis</h2>
+    <div class="material-section mt-4">
+      <h3>Vídeos</h3>
+      <div class="row" id="videos"></div>
+    </div>
+    <div class="material-section">
+      <h3>Áudios</h3>
+      <div class="row" id="audios"></div>
+    </div>
+    <div class="material-section">
+      <h3>PDFs</h3>
+      <div class="row" id="pdfs"></div>
+    </div>
+
+    <div class="mt-5">
+      <h3>Chat de Dúvidas</h3>
+      <div id="chatMessages" class="p-3 mb-3" style="max-height: 300px; overflow-y: auto;"></div>
+      <div class="input-group">
+        <input type="text" id="chatInput" class="form-control" placeholder="Digite sua dúvida...">
+        <button class="btn btn-primary" onclick="sendMessage()">Enviar</button>
+      </div>
+      <div id="chatFeedback" class="mt-2"></div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="feedbackModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Feedback</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="feedbackMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/socket.io@4.5.0/client-dist/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:3000');
+    const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+    let messageCount = 0;
+
+    function showFeedback(message, isError = false) {
+      document.getElementById('feedbackMessage').textContent = message;
+      document.getElementById('feedbackMessage').style.color = isError ? 'red' : 'black';
+      feedbackModal.show();
+    }
+
+    async function logout() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        await fetch('/api/users/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user.username })
+        });
+        socket.emit('userLogout', { userId: user.id, username: user.username });
+      }
+      localStorage.removeItem('user');
+      localStorage.removeItem('selectedTopic');
+      showFeedback('Saindo...');
+      setTimeout(() => window.location.href = 'login.html', 1000);
+    }
+
+    async function loadMaterials() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const topic = localStorage.getItem('selectedTopic');
+      if (!user || !topic) {
+        showFeedback('Por favor, selecione um tópico ou faça login.', true);
+        setTimeout(() => window.location.href = 'lessons.html', 1000);
+        return;
+      }
+
+      const allowedFormats = {
+        inicial: ['vídeo', 'PDF'],
+        intermédio: ['áudio', 'PDF'],
+        avançado: ['PDF']
+      };
+
+      try {
+        const response = await fetch(`/api/materials?topic=${topic}&level=${user.level}`);
+        const materials = await response.json();
+        const videos = document.getElementById('videos');
+        const audios = document.getElementById('audios');
+        const pdfs = document.getElementById('pdfs');
+
+        videos.innerHTML = '';
+        audios.innerHTML = '';
+        pdfs.innerHTML = '';
+
+        const filteredMaterials = materials.filter(m => allowedFormats[user.level].includes(m.format));
+
+        if (filteredMaterials.length === 0) {
+          videos.innerHTML = '<p>Nenhum vídeo disponível.</p>';
+          audios.innerHTML = '<p>Nenhum áudio disponível.</p>';
+          pdfs.innerHTML = '<p>Nenhum PDF disponível.</p>';
+          return;
+        }
+
+        filteredMaterials.forEach(material => {
+          const materialCard = `
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">${material.title}</h5>
+                  <p class="card-text">Autor: ${material.author}<br>Nível: ${material.level}<br>Formato: ${material.format}</p>
+                  <button class="btn btn-primary" onclick="viewMaterial(${material.id}, '${material.title}', '${material.format}', '${material.url}')">Acessar Material</button>
+                  <div class="material-preview" id="preview-${material.id}"></div>
+                </div>
+              </div>
+            </div>
+          `;
+          if (material.format === 'vídeo') {
+            videos.innerHTML += materialCard;
+          } else if (material.format === 'áudio') {
+            audios.innerHTML += materialCard;
+          } else if (material.format === 'PDF') {
+            pdfs.innerHTML += materialCard;
+          }
+        });
+
+        if (!videos.innerHTML) videos.innerHTML = '<p>Nenhum vídeo disponível.</p>';
+        if (!audios.innerHTML) audios.innerHTML = '<p>Nenhum áudio disponível.</p>';
+        if (!pdfs.innerHTML) pdfs.innerHTML = '<p>Nenhum PDF disponível.</p>';
+      } catch (error) {
+        showFeedback('Erro ao carregar materiais: ' + error.message, true);
+      }
+    }
+
+    async function viewMaterial(materialId, materialTitle, format, url) {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) return;
+
+      await trackAccess(materialId, materialTitle);
+
+      const previewDiv = document.getElementById(`preview-${materialId}`);
+      previewDiv.innerHTML = '';
+
+      try {
+        if (format === 'PDF') {
+          previewDiv.innerHTML = `
+            <embed src="${url}" type="application/pdf" class="material-embed" />
+          `;
+        } else if (format === 'vídeo') {
+          previewDiv.innerHTML = `
+            <video controls class="material-video">
+              <source src="${url}" type="video/mp4">
+              Seu navegador não suporta vídeos.
+            </video>
+          `;
+        } else if (format === 'áudio') {
+          previewDiv.innerHTML = `
+            <audio controls class="material-audio">
+              <source src="${url}" type="audio/mpeg">
+              Seu navegador não suporta áudios.
+            </audio>
+          `;
+        }
+      } catch (error) {
+        showFeedback('Erro ao visualizar material: ' + error.message, true);
+      }
+    }
+
+    async function trackAccess(materialId, materialTitle) {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        await fetch('/api/accesses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: user.username, path: materialTitle })
+        });
+        socket.emit('materialAccess', { userId: user.id, username: user.username, materialId, materialTitle });
+      }
+    }
+
+    async function sendMessage() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const topic = localStorage.getItem('selectedTopic');
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!user || !message) return;
+
+      messageCount++;
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML += `<p><strong>${user.username}:</strong> ${message}</p>`;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      input.value = '';
+
+      const response = await fetch('/api/doubts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, topic, userLevel: user.level, message })
+      });
+      const { doubtId } = await response.json();
+
+      socket.emit('userMessage', { doubtId, userId: user.id, username: user.username, topic, message });
+
+      const botResponse = 'Entendido! Estou analisando sua dúvida.';
+      chatMessages.innerHTML += `<p><strong>Bot:</strong> ${botResponse}</p>`;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      if (messageCount >= 5) {
+        socket.emit('notifyAdmin', { doubtId, userId: user.id, username: user.username });
+        document.getElementById('chatFeedback').innerHTML = '<p class="text-success">Um administrador foi notificado.</p>';
+      }
+    }
+
+    socket.on('adminMessage', ({ doubtId, message }) => {
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML += `<p><strong>Admin:</strong> ${message}</p>`;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+
+    loadMaterials();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc081d0abc73a5',t:'MTc0NzI0Mjg2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc6831dd04740c',t:'MTc0NzI0Njc5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fd00f6eabc4eb4',t:'MTc0NzI1MzA1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

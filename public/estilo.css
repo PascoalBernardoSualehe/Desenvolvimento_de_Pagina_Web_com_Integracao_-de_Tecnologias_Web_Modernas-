@@ -1,0 +1,77 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-disabled {
+  background-color: #f0f0f0;
+  opacity: 0.6;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.alert {
+  margin-top: 10px;
+}
+
+#chatMessages, #systemActivity, #chatHistory {
+  background-color: #fff;
+  border-radius: 5px;
+}
+
+#chatMessages p, #systemActivity p, #chatHistory p {
+  margin: 5px 0;
+}
+
+.level-section {
+  margin-bottom: 30px;
+}
+
+.level-section h3 {
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+.material-section {
+  margin-bottom: 30px;
+}
+
+.material-section h3 {
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+.material-preview {
+  margin-top: 10px;
+}
+
+.material-embed {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+.material-video, .material-audio {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 10px;
+}
