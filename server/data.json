@@ -5,7 +5,6 @@
       "username": "Pascoal",
       "type": "estudante",
       "level": "inicial",
-      "password": "1234",
       "location": "Mocambique",
       "created_at": "2025-05-14T16:10:32.137Z",
       "online": false
@@ -15,7 +14,6 @@
       "username": "yu",
       "type": "estudante",
       "level": "intermédio",
-      "password": "1234",
       "location": "Brasil",
       "created_at": "2025-05-16T10:17:39.358Z",
       "online": false

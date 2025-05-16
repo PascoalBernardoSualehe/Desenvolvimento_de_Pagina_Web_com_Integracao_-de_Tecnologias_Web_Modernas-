@@ -158,7 +158,7 @@
     function selectTopic(topic) {
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user) {
-        showFeedback('Por favor, faça login primeiro.', true);
+        showFeedback('Por favor, faça login primeiro.', false);
         setTimeout(() => window.location.href = 'login.html', 1000);
         return;
       }
