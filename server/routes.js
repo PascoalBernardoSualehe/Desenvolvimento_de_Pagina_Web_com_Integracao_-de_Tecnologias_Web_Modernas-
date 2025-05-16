@@ -44,12 +44,10 @@ router.post('/users', async (req, res) => {
   const { username, type, level, location } = req.body;
   try {
     const data = await readData();
-    // Verificar se o usuário já existe
     if (data.users.find(u => u.username === username)) {
       console.log('Usuário já existe:', username);
       return res.status(400).json({ success: false, message: 'Usuário já existe' });
     }
-    // Gerar um novo ID
     const newId = data.users.length > 0 ? Math.max(...data.users.map(u => u.id)) + 1 : 1;
     const newUser = {
       id: newId,
@@ -204,9 +202,11 @@ router.post('/admin/auth', async (req, res) => {
 
 // Materials
 router.get('/materials', async (req, res) => {
+  console.log('Requisição recebida em /api/materials:', req.query);
   try {
     const data = await readData();
-    let materials = data.materials;
+    let materials = Array.isArray(data.materials) ? data.materials : [];
+    console.log('Materiais antes do filtro:', materials);
     if (req.query.topic) {
       materials = materials.filter(m => m.topics.includes(req.query.topic));
     }
@@ -216,8 +216,10 @@ router.get('/materials', async (req, res) => {
     if (req.query.format) {
       materials = materials.filter(m => m.format === req.query.format);
     }
+    console.log('Materiais após o filtro:', materials);
     res.json(materials);
   } catch (err) {
+    console.error('Erro ao buscar materiais:', err.message, err.stack);
     res.status(500).json({ success: false, message: err.message });
   }
 });
