@@ -3,27 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estudo de Português - Admin</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="estilo.css">
+  <title>Estudo de Português</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/estilo.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand" href="index.html">Estudo de Português</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Estudo de Português</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link" href="index.html">Início</a>
+            <a class="nav-link" href="/index.html">Início</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="materials.html">Materiais</a>
+            <a class="nav-link" href="/materials.html">Materiais</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="login.html">Login</a>
+            <a class="nav-link" href="/login.html">Login</a>
           </li>
         </ul>
       </div>
@@ -32,32 +33,159 @@
 
   <div class="container mt-5">
     <h2>Painel de Administração</h2>
-    <div class="card p-4 mb-4">
-      <div class="mb-3">
-        <label for="adminKey" class="form-label">Chave de Administrador</label>
-        <input type="text" class="form-control" id="adminKey" placeholder="Digite a chave de administrador">
+
+    <div class="card mb-4" id="authSection">
+      <div class="card-body">
+        <h5 class="card-title">Chave de Administrador</h5>
+        <input type="text" id="adminKey" class="form-control mb-3" placeholder="Insira a chave de administrador">
+        <button class="btn btn-primary" onclick="authenticateAdmin()">Autenticar</button>
       </div>
-      <button class="btn btn-primary" onclick="authAdmin()">Autenticar</button>
-      <div id="authFeedback" class="mt-3"></div>
     </div>
 
-    <div id="adminPanel" style="display: none;">
-      <h3>Usuários Online</h3>
-      <div id="onlineUsers" class="p-3 mb-4"></div>
-
-      <h3>Monitoramento do Sistema</h3>
-      <div id="systemActivity" class="p-3 mb-4" style="max-height: 300px; overflow-y: auto;"></div>
-
-      <h3>Conversas do Chat</h3>
-      <div class="mb-3">
-        <select class="form-select" id="doubtSelect" onchange="loadChatHistory()">
-          <option value="">Selecione uma dúvida</option>
-        </select>
+    <div id="adminContent" style="display: none;">
+      <!-- Nova seção: Gerenciamento de Usuários -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Gerenciamento de Usuários</h5>
+          <form id="addUserForm" class="mb-3">
+            <div class="row">
+              <div class="col-md-3">
+                <input type="text" class="form-control" id="userUsername" placeholder="Nome de usuário" required>
+              </div>
+              <div class="col-md-3">
+                <select class="form-control" id="userType" required>
+                  <option value="" disabled selected>Tipo</option>
+                  <option value="estudante">Estudante</option>
+                  <option value="professor">Professor</option>
+                  <option value="visitante">Visitante</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select class="form-control" id="userLevel" required>
+                  <option value="" disabled selected>Nível</option>
+                  <option value="inicial">Inicial</option>
+                  <option value="intermédio">Intermédio</option>
+                  <option value="avançado">Avançado</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <input type="text" class="form-control" id="userLocation" placeholder="País/Localização" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Adicionar Usuário</button>
+          </form>
+          <table class="table table-striped" id="usersTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Nível</th>
+                <th>Localização</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
-      <div id="chatHistory" class="p-3 mb-3" style="max-height: 300px; overflow-y: auto;"></div>
-      <div class="input-group">
-        <input type="text" id="adminChatInput" class="form-control" placeholder="Digite sua resposta...">
-        <button class="btn btn-primary" onclick="sendAdminMessage()">Enviar</button>
+
+      <!-- Nova seção: Gerenciamento de Administradores -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Gerenciamento de Administradores</h5>
+          <form id="addAdminForm" class="mb-3">
+            <div class="row">
+              <div class="col-md-6">
+                <input type="text" class="form-control" id="adminUsername" placeholder="Nome de usuário" required>
+              </div>
+              <div class="col-md-6">
+                <input type="text" class="form-control" id="adminKeyInput" placeholder="Chave de administrador" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Adicionar Administrador</button>
+          </form>
+          <table class="table table-striped" id="adminsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Chave</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Seção existente: Usuários Online -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Usuários Online</h5>
+          <div id="onlineUsers"></div>
+        </div>
+      </div>
+
+      <!-- Seção existente: Monitoramento do Sistema -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Monitoramento do Sistema</h5>
+          <div id="systemActivity"></div>
+        </div>
+      </div>
+
+      <!-- Seção existente: Conversas do Chat -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Conversas do Chat</h5>
+          <select id="doubtSelect" class="form-control mb-3" onchange="loadChat()">
+            <option value="">Selecione uma dúvida</option>
+          </select>
+          <div id="chatHistory"></div>
+          <form id="adminChatForm">
+            <textarea id="adminMessage" class="form-control mb-3" rows="3" placeholder="Digite sua resposta"></textarea>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Nova seção: Relatório de Temas com Mais Dúvidas -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Relatório de Temas com Mais Dúvidas</h5>
+          <canvas id="doubtsChart" height="100"></canvas>
+          <table class="table table-striped mt-3">
+            <thead>
+              <tr>
+                <th>Tema</th>
+                <th>Número de Dúvidas</th>
+              </tr>
+            </thead>
+            <tbody id="doubtsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Nova seção: Relatório de Utilização da Plataforma -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Relatório de Utilização da Plataforma</h5>
+          <canvas id="accessChart" height="100"></canvas>
+          <table class="table table-striped mt-3">
+            <thead>
+              <tr>
+                <th>Métrica</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Acessos por Dia</td><td id="accessesPerDay"></td></tr>
+              <tr><td>Tempo Médio por Sessão (min)</td><td id="avgSessionTime"></td></tr>
+              <tr><td>Materiais Mais Visualizados</td><td id="topMaterials"></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -65,147 +193,328 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/socket.io@4.5.0/client-dist/socket.io.min.js"></script>
   <script>
-    const socket = io('http://localhost:3000/admin');
+    const socket = io();
+    const adminSocket = io('/admin');
+    let isAuthenticated = false;
 
-    async function authAdmin() {
-      const adminKey = document.getElementById('adminKey').value.trim();
-      if (!adminKey) {
-        showAuthFeedback('Por favor, insira a chave de administrador.', true);
-        return;
-      }
-
+    // Autenticação
+    async function authenticateAdmin() {
+      const adminKey = document.getElementById('adminKey').value;
       try {
         const response = await fetch('/api/admin/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ adminKey })
         });
-        const data = await response.json();
-
-        if (data.success) {
-          document.getElementById('adminPanel').style.display = 'block';
-          document.getElementById('adminKey').value = '';
-          showAuthFeedback('Autenticação realizada com sucesso!');
-          loadOnlineUsers();
+        const result = await response.json();
+        if (result.success) {
+          isAuthenticated = true;
+          document.getElementById('authSection').style.display = 'none';
+          document.getElementById('adminContent').style.display = 'block';
+          loadUsers();
+          loadAdmins();
           loadDoubts();
+          loadReports();
         } else {
-          showAuthFeedback(data.message, true);
+          alert('Chave de administrador inválida.');
         }
-      } catch (error) {
-        showAuthFeedback('Erro ao autenticar: ' + error.message, true);
+      } catch (err) {
+        alert('Erro ao autenticar: ' + err.message);
       }
     }
 
-    async function loadOnlineUsers() {
-      try {
-        const response = await fetch('/api/users');
-        const users = await response.json();
-        const onlineUsers = document.getElementById('onlineUsers');
-        onlineUsers.innerHTML = users
-          .map(user => `<p>${user.username}: ${user.online ? '<span class="text-success">Online</span>' : '<span class="text-danger">Offline</span>'}</p>`)
-          .join('');
-      } catch (error) {
-        showAuthFeedback('Erro ao carregar usuários: ' + error.message, true);
-      }
+    // Carregar usuários
+    async function loadUsers() {
+      const response = await fetch('/api/users');
+      const users = await response.json();
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      users.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${user.id}</td>
+          <td>${user.username}</td>
+          <td>${user.type}</td>
+          <td>${user.level}</td>
+          <td>${user.location}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editUser(${user.id})">Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Excluir</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    async function loadDoubts() {
-      try {
-        const response = await fetch('/api/doubts');
-        const doubts = await response.json();
-        const doubtSelect = document.getElementById('doubtSelect');
-        doubtSelect.innerHTML = '<option value="">Selecione uma dúvida</option>';
-        doubts.forEach(doubt => {
-          doubtSelect.innerHTML += `<option value="${doubt.id}">Dúvida ${doubt.id} - ${doubt.topic} (${doubt.userLevel})</option>`;
-        });
-      } catch (error) {
-        showAuthFeedback('Erro ao carregar dúvidas: ' + error.message, true);
+    // Adicionar usuário
+    document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = {
+        username: document.getElementById('userUsername').value,
+        type: document.getElementById('userType').value,
+        level: document.getElementById('userLevel').value,
+        location: document.getElementById('userLocation').value
+      };
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+      const result = await response.json();
+      if (result.success) {
+        socket.emit('newUser', { userId: result.userId, ...user });
+        loadUsers();
+        e.target.reset();
+      } else {
+        alert(result.message);
       }
-    }
+    });
 
-    async function loadChatHistory() {
-      const doubtId = document.getElementById('doubtSelect').value;
-      if (!doubtId) {
-        document.getElementById('chatHistory').innerHTML = '';
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/doubts');
-        const doubts = await response.json();
-        const doubt = doubts.find(d => d.id === parseInt(doubtId));
-        const chatHistory = document.getElementById('chatHistory');
-        chatHistory.innerHTML = doubt.chatMessages
-          .map(msg => `<p><strong>${msg.sender}:</strong> ${msg.text}</p>`)
-          .join('');
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-      } catch (error) {
-        showAuthFeedback('Erro ao carregar histórico: ' + error.message, true);
-      }
-    }
-
-    async function sendAdminMessage() {
-      const doubtId = document.getElementById('doubtSelect').value;
-      const message = document.getElementById('adminChatInput').value.trim();
-      if (!doubtId || !message) return;
-
-      try {
-        await fetch('/api/doubts', {
+    // Editar usuário
+    async function editUser(id) {
+      const response = await fetch(`/api/users/${id}`);
+      const user = await response.json();
+      document.getElementById('userUsername').value = user.username;
+      document.getElementById('userType').value = user.type;
+      document.getElementById('userLevel').value = user.level;
+      document.getElementById('userLocation').value = user.location;
+      document.getElementById('addUserForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const updatedUser = {
+          username: document.getElementById('userUsername').value,
+          type: document.getElementById('userType').value,
+          level: document.getElementById('userLevel').value,
+          location: document.getElementById('userLocation').value
+        };
+        await fetch(`/api/users/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ doubtId: parseInt(doubtId), message, sender: 'Admin' })
+          body: JSON.stringify(updatedUser)
         });
+        loadUsers();
+        e.target.reset();
+        document.getElementById('addUserForm').onsubmit = null;
+      };
+    }
 
-        socket.emit('adminMessage', { doubtId: parseInt(doubtId), message });
-
-        const chatHistory = document.getElementById('chatHistory');
-        chatHistory.innerHTML += `<p><strong>Admin:</strong> ${message}</p>`;
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-        document.getElementById('adminChatInput').value = '';
-      } catch (error) {
-        showAuthFeedback('Erro ao enviar mensagem: ' + error.message, true);
+    // Excluir usuário
+    async function deleteUser(id) {
+      if (confirm('Tem certeza que deseja excluir este usuário?')) {
+        await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        loadUsers();
       }
     }
 
-    function showAuthFeedback(message, isError = false) {
-      const feedback = document.getElementById('authFeedback');
-      feedback.innerHTML = `<div class="alert alert-${isError ? 'danger' : 'success'}">${message}</div>`;
-      setTimeout(() => feedback.innerHTML = '', 3000);
+    // Carregar administradores
+    async function loadAdmins() {
+      const response = await fetch('/api/admins');
+      const admins = await response.json();
+      const tbody = document.querySelector('#adminsTable tbody');
+      tbody.innerHTML = '';
+      admins.forEach(admin => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <Vida útil: ${admin.id}</td>
+          <td>${admin.username}</td>
+          <td>${admin.admin_key}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editAdmin(${admin.id})">Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.id})">Excluir</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    socket.on('systemActivity', (activity) => {
-      const systemActivity = document.getElementById('systemActivity');
-      systemActivity.innerHTML += `<p>${new Date().toLocaleString('pt-BR')}: ${activity}</p>`;
-      systemActivity.scrollTop = systemActivity.scrollHeight;
-    });
-
-    socket.on('userStatus', ({ username, online }) => {
-      loadOnlineUsers();
-      const systemActivity = document.getElementById('systemActivity');
-      systemActivity.innerHTML += `<p>${new Date().toLocaleString('pt-BR')}: Usuário ${username} está ${online ? 'online' : 'offline'}.</p>`;
-      systemActivity.scrollTop = systemActivity.scrollHeight;
-    });
-
-    socket.on('userMessage', ({ doubtId, username, topic, message }) => {
-      const doubtSelect = document.getElementById('doubtSelect');
-      const exists = Array.from(doubtSelect.options).some(opt => opt.value === doubtId.toString());
-      if (!exists) {
-        doubtSelect.innerHTML += `<option value="${doubtId}">Dúvida ${doubtId} - ${topic} (${username})</option>`;
-      }
-      if (doubtSelect.value === doubtId.toString()) {
-        const chatHistory = document.getElementById('chatHistory');
-        chatHistory.innerHTML += `<p><strong>${username}:</strong> ${message}</p>`;
-        chatHistory.scrollTop = chatHistory.scrollHeight;
+    // Adicionar administrador
+    document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const admin = {
+        username: document.getElementById('adminUsername').value,
+        adminKey: document.getElementById('adminKeyInput').value
+      };
+      const response = await fetch('/api/admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(admin)
+      });
+      const result = await response.json();
+      if (result.success) {
+        loadAdmins();
+        e.target.reset();
+      } else {
+        alert(result.message);
       }
     });
 
-    socket.on('adminMessage', ({ doubtId, message }) => {
+    // Editar administrador
+    async function editAdmin(id) {
+      const response = await fetch(`/api/admins/${id}`);
+      const admin = await response.json();
+      document.getElementById('adminUsername').value = admin.username;
+      document.getElementById('adminKeyInput').value = admin.admin_key;
+      document.getElementById('addAdminForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const updatedAdmin = {
+          username: document.getElementById('adminUsername').value,
+          adminKey: document.getElementById('adminKeyInput').value
+        };
+        await fetch(`/api/admins/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedAdmin)
+        });
+        loadAdmins();
+        e.target.reset();
+        document.getElementById('addAdminForm').onsubmit = null;
+      };
+    }
+
+    // Excluir administrador
+    async function deleteAdmin(id) {
+      if (confirm('Tem certeza que deseja excluir este administrador?')) {
+        await fetch(`/api/admins/${id}`, { method: 'DELETE' });
+        loadAdmins();
+      }
+    }
+
+    // Carregar dúvidas
+    async function loadDoubts() {
+      const response = await fetch('/api/doubts');
+      const doubts = await response.json();
+      const select = document.getElementById('doubtSelect');
+      select.innerHTML = '<option value="">Selecione uma dúvida</option>';
+      doubts.forEach(doubt => {
+        const option = document.createElement('option');
+        option.value = doubt.id;
+        option.textContent = `Dúvida ${doubt.id} - ${doubt.topic} (${doubt.userLevel})`;
+        select.appendChild(option);
+      });
+    }
+
+    // Carregar histórico do chat
+    async function loadChat() {
+      const doubtId = document.getElementById('doubtSelect').value;
+      if (!doubtId) return;
+      const response = await fetch('/api/doubts');
+      const doubts = await response.json();
+      const doubt = doubts.find(d => d.id === parseInt(doubtId));
+      const history = document.getElementById('chatHistory');
+      history.innerHTML = '';
+      doubt.chatMessages.forEach(msg => {
+        const p = document.createElement('p');
+        p.textContent = `${msg.sender} (${new Date(msg.timestamp).toLocaleString()}): ${msg.text}`;
+        history.appendChild(p);
+      });
+    }
+
+    // Enviar mensagem do admin
+    document.getElementById('adminChatForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const doubtId = document.getElementById('doubtSelect').value;
+      const message = document.getElementById('adminMessage').value;
+      if (doubtId && message) {
+        adminSocket.emit('adminMessage', { doubtId, message });
+        document.getElementById('adminMessage').value = '';
+      }
+    });
+
+    // Atualizar usuários online
+    adminSocket.on('userStatus', ({ userId, username, online }) => {
+      const onlineUsers = document.getElementById('onlineUsers');
+      const existing = Array.from(onlineUsers.children).find(p => p.dataset.userId === userId.toString());
+      if (online && !existing) {
+        const p = document.createElement('p');
+        p.dataset.userId = userId;
+        p.textContent = `${username} (Online)`;
+        onlineUsers.appendChild(p);
+      } else if (!online && existing) {
+        existing.remove();
+      }
+    });
+
+    // Atualizar atividades do sistema
+    adminSocket.on('systemActivity', (activity) => {
+      const systemActivity = document.getElementById('systemActivity');
+      const p = document.createElement('p');
+      p.textContent = `${new Date().toLocaleString()}: ${activity}`;
+      systemActivity.appendChild(p);
+      systemActivity.scrollTop = systemActivity.scrollHeight;
+    });
+
+    // Atualizar mensagens do chat
+    adminSocket.on('userMessage', ({ doubtId, userId, username, topic, message }) => {
+      const select = document.getElementById('doubtSelect');
+      if (!Array.from(select.options).some(opt => opt.value === doubtId.toString())) {
+        const option = document.createElement('option');
+        option.value = doubtId;
+        option.textContent = `Dúvida ${doubtId} - ${topic} (${username})`;
+        select.appendChild(option);
+      }
+      if (select.value === doubtId.toString()) {
+        const history = document.getElementById('chatHistory');
+        const p = document.createElement('p');
+        p.textContent = `${username} (${new Date().toLocaleString()}): ${message}`;
+        history.appendChild(p);
+        history.scrollTop = history.scrollHeight;
+      }
+    });
+
+    adminSocket.on('adminMessage', ({ doubtId, message }) => {
       if (document.getElementById('doubtSelect').value === doubtId.toString()) {
-        const chatHistory = document.getElementById('chatHistory');
-        chatHistory.innerHTML += `<p><strong>Admin:</strong> ${message}</p>`;
-        chatHistory.scrollTop = chatHistory.scrollHeight;
+        const history = document.getElementById('chatHistory');
+        const p = document.createElement('p');
+        p.textContent = `Admin (${new Date().toLocaleString()}): ${message}`;
+        history.appendChild(p);
+        history.scrollTop = history.scrollHeight;
       }
     });
+
+    // Carregar relatórios
+    async function loadReports() {
+      // Relatório de Temas com Mais Dúvidas
+      const doubtsResponse = await fetch('/api/reports/doubts');
+      const doubtsData = await doubtsResponse.json();
+      const doubtsTable = document.getElementById('doubtsTable');
+      doubtsTable.innerHTML = '';
+      doubtsData.topics.forEach((topic, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${topic}</td><td>${doubtsData.counts[i]}</td>`;
+        doubtsTable.appendChild(tr);
+      });
+      new Chart(document.getElementById('doubtsChart'), {
+        type: 'bar',
+        data: {
+          labels: doubtsData.topics,
+          datasets: [{
+            label: 'Número de Dúvidas',
+            data: doubtsData.counts,
+            backgroundColor: '#007bff'
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+
+      // Relatório de Utilização da Plataforma
+      const usageResponse = await fetch('/api/reports/usage');
+      const usageData = await usageResponse.json();
+      document.getElementById('accessesPerDay').textContent = usageData.accessesPerDay;
+      document.getElementById('avgSessionTime').textContent = usageData.avgSessionTime;
+      document.getElementById('topMaterials').textContent = usageData.topMaterials.join(', ');
+      new Chart(document.getElementById('accessChart'), {
+        type: 'line',
+        data: {
+          labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+          datasets: [{
+            label: 'Acessos por Dia',
+            data: [usageData.accessesPerDay, usageData.accessesPerDay * 1.2, usageData.accessesPerDay * 0.8, usageData.accessesPerDay * 1.1, usageData.accessesPerDay * 0.9, usageData.accessesPerDay * 0.7, usageData.accessesPerDay * 0.6],
+            borderColor: '#007bff',
+            fill: false
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    }
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc065a3e2e73a5',t:'MTc0NzI0Mjc5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fc61f11e10740c',t:'MTc0NzI0NjU0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93fcfc8ffb4bda14',t:'MTc0NzI1Mjg3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9408ffdfad377415',t:'MTc0NzM3ODg0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94093292a9c3a0d0',t:'MTc0NzM4MDkxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94098b952f0cbd1a',t:'MTc0NzM4NDU2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'940a3d6ad872b72b',t:'MTc0NzM5MTg0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'940a49b27fda8a34',t:'MTc0NzM5MjM1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

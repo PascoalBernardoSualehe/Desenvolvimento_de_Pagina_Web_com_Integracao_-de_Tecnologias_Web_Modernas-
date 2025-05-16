@@ -7,7 +7,16 @@
       "level": "inicial",
       "location": "Mocambique",
       "created_at": "2025-05-14T16:10:32.137Z",
-      "online": true
+      "online": false
+    },
+    {
+      "id": 2,
+      "username": "yu",
+      "type": "estudante",
+      "level": "intermédio",
+      "location": "Brasil",
+      "created_at": "2025-05-16T10:17:39.358Z",
+      "online": false
     }
   ],
   "admins": [
@@ -139,7 +148,282 @@
       "views": 0
     }
   ],
-  "doubts": [],
-  "chatMessages": [],
+  "doubts": [
+    {
+      "id": 1,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 4,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 5,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 6,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 7,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 8,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 9,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 10,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 11,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 12,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 13,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 14,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 15,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 16,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 17,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 18,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 19,
+      "userId": 1,
+      "materialId": null,
+      "topic": "leitura",
+      "userLevel": "inicial"
+    }
+  ],
+  "chatMessages": [
+    {
+      "id": 1,
+      "doubtId": 1,
+      "sender": "Pascoal",
+      "text": "ol",
+      "timestamp": "2025-05-15T16:16:31.242Z"
+    },
+    {
+      "id": 2,
+      "doubtId": 1,
+      "sender": "Admin",
+      "text": "oi",
+      "timestamp": "2025-05-15T16:16:45.617Z"
+    },
+    {
+      "id": 3,
+      "doubtId": 2,
+      "sender": "Pascoal",
+      "text": "jk",
+      "timestamp": "2025-05-15T16:16:51.763Z"
+    },
+    {
+      "id": 4,
+      "doubtId": 3,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T10:24:16.266Z"
+    },
+    {
+      "id": 5,
+      "doubtId": 4,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T10:36:50.690Z"
+    },
+    {
+      "id": 6,
+      "doubtId": 5,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T10:36:56.796Z"
+    },
+    {
+      "id": 7,
+      "doubtId": 6,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T10:37:01.452Z"
+    },
+    {
+      "id": 8,
+      "doubtId": 7,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T10:37:04.974Z"
+    },
+    {
+      "id": 9,
+      "doubtId": 8,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T10:37:08.610Z"
+    },
+    {
+      "id": 10,
+      "doubtId": 9,
+      "sender": "Pascoal",
+      "text": "jkj",
+      "timestamp": "2025-05-16T10:37:12.359Z"
+    },
+    {
+      "id": 11,
+      "doubtId": 10,
+      "sender": "Pascoal",
+      "text": "jkj",
+      "timestamp": "2025-05-16T10:37:16.269Z"
+    },
+    {
+      "id": 12,
+      "doubtId": 11,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T10:45:12.500Z"
+    },
+    {
+      "id": 13,
+      "doubtId": 12,
+      "sender": "Pascoal",
+      "text": "k",
+      "timestamp": "2025-05-16T10:45:16.944Z"
+    },
+    {
+      "id": 14,
+      "doubtId": 13,
+      "sender": "Pascoal",
+      "text": "zx",
+      "timestamp": "2025-05-16T10:45:20.448Z"
+    },
+    {
+      "id": 15,
+      "doubtId": 14,
+      "sender": "Pascoal",
+      "text": "zx",
+      "timestamp": "2025-05-16T10:45:24.049Z"
+    },
+    {
+      "id": 16,
+      "doubtId": 15,
+      "sender": "Pascoal",
+      "text": "xzx",
+      "timestamp": "2025-05-16T10:45:27.869Z"
+    },
+    {
+      "id": 17,
+      "doubtId": 16,
+      "sender": "Pascoal",
+      "text": "xz",
+      "timestamp": "2025-05-16T10:45:29.838Z"
+    },
+    {
+      "id": 18,
+      "doubtId": 17,
+      "sender": "Pascoal",
+      "text": "xz",
+      "timestamp": "2025-05-16T10:45:32.437Z"
+    },
+    {
+      "id": 19,
+      "doubtId": 18,
+      "sender": "Pascoal",
+      "text": "xz",
+      "timestamp": "2025-05-16T10:45:34.660Z"
+    },
+    {
+      "id": 20,
+      "doubtId": 19,
+      "sender": "Pascoal",
+      "text": "sa",
+      "timestamp": "2025-05-16T10:45:38.428Z"
+    }
+  ],
   "accesses": []
 }
