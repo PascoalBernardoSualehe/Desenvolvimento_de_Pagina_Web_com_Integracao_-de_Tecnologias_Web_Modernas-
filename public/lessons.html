@@ -96,12 +96,24 @@
     async function logout() {
       const user = JSON.parse(localStorage.getItem('user'));
       if (user) {
-        await fetch('/users/logout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: user.username })
-        });
-        socket.emit('userLogout', { userId: user.id, username: user.username });
+        try {
+          console.log('Enviando requisição de logout para:', `${BASE_URL}/api/users/logout`);
+          const response = await fetch(`${BASE_URL}/api/users/logout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user.username })
+          });
+          const data = await response.json();
+          console.log('Resposta do logout:', data);
+          if (!data.success) {
+            showFeedback(`Erro ao fazer logout: ${data.message}`, true);
+            return;
+          }
+          socket.emit('userLogout', { userId: user.id, username: user.username });
+        } catch (error) {
+          console.error('Erro ao fazer logout:', error);
+          showFeedback('Erro ao conectar ao servidor durante logout.', true);
+        }
       }
       localStorage.removeItem('user');
       localStorage.removeItem('selectedTopic');

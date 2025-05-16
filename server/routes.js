@@ -110,16 +110,25 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.post('/users/logout', async (req, res) => {
+  console.log('Requisição recebida em /api/users/logout:', req.body);
   try {
     const { username } = req.body;
-    if (!username) return res.status(400).json({ success: false, message: 'Nome de usuário é obrigatório.' });
+    if (!username) {
+      console.log('Nome de usuário não fornecido');
+      return res.status(400).json({ success: false, message: 'Nome de usuário é obrigatório.' });
+    }
     const data = await readData();
     const user = data.users.find(u => u.username === username);
-    if (!user) return res.status(404).json({ success: false, message: 'Usuário não encontrado.' });
+    if (!user) {
+      console.log('Usuário não encontrado:', username);
+      return res.status(404).json({ success: false, message: 'Usuário não encontrado.' });
+    }
     user.online = false;
     await writeData(data);
+    console.log('Logout bem-sucedido para:', username);
     res.json({ success: true });
   } catch (err) {
+    console.error('Erro ao processar logout:', err.message, err.stack);
     res.status(500).json({ success: false, message: err.message });
   }
 });
