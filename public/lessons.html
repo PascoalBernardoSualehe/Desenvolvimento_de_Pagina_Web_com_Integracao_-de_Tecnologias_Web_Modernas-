@@ -144,8 +144,14 @@
       try {
         const levels = ['inicial', 'intermédio', 'avançado'];
         for (const level of levels) {
-          const response = await fetch(`/api/materials?level=${level}`);
+          console.log(`Buscando materiais para nível: ${level}`);
+          const response = await fetch(`${BASE_URL}/api/materials?level=${level}`);
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Erro ${response.status}: ${errorData.message || 'Falha ao buscar materiais'}`);
+          }
           const materials = await response.json();
+          console.log(`Materiais recebidos para ${level}:`, materials);
           const availableTopics = [...new Set(materials.flatMap(m => m.topics))];
           const topics = topicConfig[level].filter(t => availableTopics.includes(t));
           const container = topicContainers[level];
@@ -176,7 +182,8 @@
           });
         }
       } catch (error) {
-        showFeedback('Erro ao carregar tópicos: ' + error.message, true);
+        console.error('Erro ao carregar tópicos:', error.message, error.stack);
+        showFeedback(`Erro ao carregar tópicos: ${error.message}`, true);
       }
     }
 
