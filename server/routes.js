@@ -45,7 +45,7 @@ router.post('/users', async (req, res) => {
   console.log('Requisição recebida em /api/users:', req.body);
   const { username, type, level, location } = req.body;
   try {
-    const users = JSON.parse(fs.readFileSync(path.join(__dirname, '../data.json')));
+    const users = JSON.parse(fs.readFileSync(path.join(__dirname, 'data.json')));
     // Verificar se o usuário já existe
     if (users.find(u => u.username === username)) {
       console.log('Usuário já existe:', username);
@@ -62,13 +62,18 @@ router.post('/users', async (req, res) => {
       online: false
     };
     users.push(newUser);
-    fs.writeFileSync(path.join(__dirname, '../data.json'), JSON.stringify(users, null, 2));
+    fs.writeFileSync(path.join(__dirname, 'data.json'), JSON.stringify(users, null, 2));
     console.log('Usuário cadastrado com sucesso:', username);
     res.json({ success: true, user: newUser });
   } catch (error) {
     console.error('Erro ao cadastrar usuário:', error);
     res.status(500).json({ success: false, message: 'Erro interno do servidor' });
   }
+});
+
+router.get('/users', (req, res) => {
+  const users = JSON.parse(fs.readFileSync(path.join(__dirname, '../data.json')));
+  res.json(users);
 });
 
 router.get('/users/:id', async (req, res) => {
