@@ -6,13 +6,21 @@ const routes = require('./routes');
 
 const app = express();
 const server = http.createServer(app);
+
+// Configurar CORS para o domínio do Render
+const corsOptions = {
+  origin: process.env.RENDER_EXTERNAL_HOSTNAME || 'https://desenvolvimento-de-pagina-web-com-dfk9.onrender.com',
+  methods: ['GET', 'POST'],
+  credentials: true
+};
+
 const io = socketIo(server, {
-  cors: { origin: 'http://localhost:3000' && 'https://desenvolvimento-de-pagina-web-com-dfk9.onrender.com', methods: ['GET', 'POST'] }
+  cors: corsOptions
 });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
-app.use('/api', routes); // Rotas não precisam de conexão com banco
+app.use('/api', routes);
 
 const adminNamespace = io.of('/admin');
 
@@ -60,6 +68,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
-server.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+// Escutar na porta dinâmica do Render
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
