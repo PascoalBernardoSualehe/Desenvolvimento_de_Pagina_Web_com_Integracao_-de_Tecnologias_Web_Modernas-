@@ -155,18 +155,7 @@
       }
     }
 
-    function selectTopic(topic) {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (!user) {
-        showFeedback('Por favor, faça login primeiro.', false);
-        setTimeout(() => window.location.href = 'login.html', 1000);
-        return;
-      }
-      localStorage.setItem('selectedTopic', topic);
-      socket.emit('selectTopic', { userId: user.id, username: user.username, topic });
-      showFeedback(`Tópico "${topic}" selecionado! Redirecionando...`);
-      setTimeout(() => window.location.href = 'materials.html', 1000);
-    }
+    
 
     loadTopics();
   </script>
