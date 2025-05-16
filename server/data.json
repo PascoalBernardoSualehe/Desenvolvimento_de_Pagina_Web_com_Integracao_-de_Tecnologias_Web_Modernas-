@@ -281,6 +281,62 @@
       "materialId": null,
       "topic": "leitura",
       "userLevel": "inicial"
+    },
+    {
+      "id": 20,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 21,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 22,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 23,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 24,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 25,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 26,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
+    },
+    {
+      "id": 27,
+      "userId": 1,
+      "materialId": null,
+      "topic": "gramática",
+      "userLevel": "inicial"
     }
   ],
   "chatMessages": [
@@ -423,6 +479,62 @@
       "sender": "Pascoal",
       "text": "sa",
       "timestamp": "2025-05-16T10:45:38.428Z"
+    },
+    {
+      "id": 21,
+      "doubtId": 20,
+      "sender": "Pascoal",
+      "text": "ola",
+      "timestamp": "2025-05-16T12:05:50.191Z"
+    },
+    {
+      "id": 22,
+      "doubtId": 21,
+      "sender": "Pascoal",
+      "text": "l",
+      "timestamp": "2025-05-16T12:05:55.779Z"
+    },
+    {
+      "id": 23,
+      "doubtId": 22,
+      "sender": "Pascoal",
+      "text": "l",
+      "timestamp": "2025-05-16T12:05:59.460Z"
+    },
+    {
+      "id": 24,
+      "doubtId": 23,
+      "sender": "Pascoal",
+      "text": "l",
+      "timestamp": "2025-05-16T12:06:02.712Z"
+    },
+    {
+      "id": 25,
+      "doubtId": 24,
+      "sender": "Pascoal",
+      "text": "l",
+      "timestamp": "2025-05-16T12:06:05.735Z"
+    },
+    {
+      "id": 26,
+      "doubtId": 25,
+      "sender": "Pascoal",
+      "text": "l",
+      "timestamp": "2025-05-16T12:06:08.702Z"
+    },
+    {
+      "id": 27,
+      "doubtId": 26,
+      "sender": "Pascoal",
+      "text": "l",
+      "timestamp": "2025-05-16T12:06:11.823Z"
+    },
+    {
+      "id": 28,
+      "doubtId": 27,
+      "sender": "Pascoal",
+      "text": "l",
+      "timestamp": "2025-05-16T12:06:15.037Z"
     }
   ],
   "accesses": []
