@@ -122,7 +122,7 @@
       }
 
       try {
-        // Enviar requisição ao back-end
+        console.log('Enviando requisição para:', `${BASE_URL}/api/users/login`);
         const response = await fetch(`${BASE_URL}/api/users/login`, {
           method: 'POST',
           headers: {
@@ -131,7 +131,10 @@
           body: JSON.stringify({ username })
         });
 
+        console.log('Resposta do servidor:', response.status, response.statusText);
         const data = await response.json();
+        console.log('Dados recebidos:', data);
+
         if (!data.success) {
           alert(data.message || 'Usuário não encontrado. Por favor, cadastre-se.');
           return;
