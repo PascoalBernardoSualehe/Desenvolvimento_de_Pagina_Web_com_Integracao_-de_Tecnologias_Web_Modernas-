@@ -71,11 +71,6 @@ router.post('/users', async (req, res) => {
   }
 });
 
-router.get('/users', (req, res) => {
-  const users = JSON.parse(fs.readFileSync(path.join(__dirname, '../data.json')));
-  res.json(users);
-});
-
 router.get('/users/:id', async (req, res) => {
   try {
     const data = await readData();
