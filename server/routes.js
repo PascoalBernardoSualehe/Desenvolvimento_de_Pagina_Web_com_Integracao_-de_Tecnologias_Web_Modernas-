@@ -9,8 +9,12 @@ const dataPath = path.join(__dirname, 'data.json');
 async function readData() {
   try {
     console.log(`Tentando ler arquivo em: ${dataPath}`);
-    await fs.access(dataPath, fs.constants.R_OK); // Verifica se o arquivo existe e é legível
+    await fs.access(dataPath, fs.constants.R_OK);
     const data = await fs.readFile(dataPath, 'utf8');
+    if (!data.trim()) {
+      console.error('Arquivo data.json está vazio');
+      throw new Error('Arquivo data.json está vazio');
+    }
     const parsedData = JSON.parse(data);
     console.log('Arquivo data.json lido com sucesso');
     return parsedData;
@@ -225,6 +229,7 @@ router.get('/materials', async (req, res) => {
       materials = materials.filter(m => m.format === req.query.format);
     }
     console.log('Materiais após o filtro:', materials);
+    res.setHeader('Content-Type', 'application/json');
     res.json(materials);
   } catch (err) {
     console.error('Erro ao buscar materiais:', err.message, err.stack);

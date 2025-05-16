@@ -145,16 +145,31 @@
         const levels = ['inicial', 'intermédio', 'avançado'];
         for (const level of levels) {
           console.log(`Buscando materiais para nível: ${level} em ${BASE_URL}/api/materials?level=${level}`);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout de 5s
           const response = await fetch(`${BASE_URL}/api/materials?level=${level}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal
           });
-          console.log(`Resposta recebida para nível ${level}: Status ${response.status}`);
+          clearTimeout(timeoutId);
+          console.log(`Resposta recebida para nível ${level}: Status ${response.status}, Headers:`, response.headers.get('Content-Type'));
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(`Erro ${response.status}: ${errorData.message || 'Falha ao buscar materiais'}`);
           }
-          const materials = await response.json();
+          const text = await response.text(); // Ler como texto primeiro
+          console.log(`Corpo da resposta para ${level}:`, text || 'Corpo vazio');
+          if (!text) {
+            throw new Error('Resposta vazia do servidor');
+          }
+          let materials;
+          try {
+            materials = JSON.parse(text);
+          } catch (e) {
+            console.error(`Erro ao parsear JSON para ${level}:`, e.message);
+            throw new Error(`Resposta inválida: ${e.message}`);
+          }
           if (!Array.isArray(materials)) {
             console.error(`Resposta inválida para nível ${level}:`, materials);
             throw new Error(`Resposta inválida do servidor: esperado array, recebido ${typeof materials}`);
