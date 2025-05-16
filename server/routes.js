@@ -29,8 +29,6 @@ function generateId(array) {
   return array.length > 0 ? Math.max(...array.map(item => item.id)) + 1 : 1;
 }
 
-module.exports = router;
-
 // Users
 router.get('/users', async (req, res) => {
   try {
@@ -45,28 +43,29 @@ router.post('/users', async (req, res) => {
   console.log('Requisição recebida em /api/users:', req.body);
   const { username, type, level, location } = req.body;
   try {
-    const users = JSON.parse(fs.readFileSync(path.join(__dirname, 'data.json')));
+    const data = await readData();
     // Verificar se o usuário já existe
-    if (users.find(u => u.username === username)) {
+    if (data.users.find(u => u.username === username)) {
       console.log('Usuário já existe:', username);
       return res.status(400).json({ success: false, message: 'Usuário já existe' });
     }
     // Gerar um novo ID
-    const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+    const newId = data.users.length > 0 ? Math.max(...data.users.map(u => u.id)) + 1 : 1;
     const newUser = {
       id: newId,
       username,
       type,
       level,
       location,
-      online: false
+      online: false,
+      created_at: new Date().toISOString()
     };
-    users.push(newUser);
-    fs.writeFileSync(path.join(__dirname, 'data.json'), JSON.stringify(users, null, 2));
+    data.users.push(newUser);
+    await writeData(data);
     console.log('Usuário cadastrado com sucesso:', username);
     res.json({ success: true, user: newUser });
   } catch (error) {
-    console.error('Erro ao cadastrar usuário:', error);
+    console.error('Erro ao cadastrar usuário:', error.message, error.stack);
     res.status(500).json({ success: false, message: 'Erro interno do servidor' });
   }
 });
@@ -426,3 +425,5 @@ router.get('/reports/usage', async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
+module.exports = router;
