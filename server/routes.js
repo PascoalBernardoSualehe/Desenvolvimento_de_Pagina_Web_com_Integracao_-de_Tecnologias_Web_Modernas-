@@ -65,6 +65,7 @@ router.post('/users', async (req, res) => {
     const newUser = {
       id: generateId(data.users),
       username,
+      password,
       type,
       level,
       location,

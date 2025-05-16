@@ -22,9 +22,16 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', routes);
 
+// Middleware para log de erros
+app.use((err, req, res, next) => {
+  console.error('Erro no servidor:', err.stack);
+  res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+});
+
 const adminNamespace = io.of('/admin');
 
 io.on('connection', (socket) => {
+  console.log('Novo cliente conectado:', socket.id);
   socket.on('newUser', ({ userId, username, type, level, location }) => {
     adminNamespace.emit('systemActivity', `Novo Utilizador: ${username} (${type}, ${level}, ${location}) cadastrado.`);
   });

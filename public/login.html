@@ -66,6 +66,11 @@
   </div>
 
   <script>
+    // Determinar a URL base com base no ambiente
+    const BASE_URL = window.location.hostname.includes('onrender.com')
+      ? window.location.origin
+      : 'http://localhost:3000';
+
     // Função para cadastrar um usuário
     function handleRegister() {
       const username = document.getElementById('registerUsername').value;
@@ -106,7 +111,7 @@
     }
 
     // Função para realizar o login e redirecionar
-    function handleLogin() {
+    async function handleLogin() {
       const username = document.getElementById('loginUsername').value;
       const password = document.getElementById('loginPassword').value;
 
@@ -116,25 +121,45 @@
         return;
       }
 
-      // Verificar se o usuário existe no localStorage
-      const userData = localStorage.getItem('user_' + username);
-      if (!userData) {
-        alert('Usuário não encontrado. Por favor, cadastre-se.');
-        return;
+      try {
+        // Enviar requisição ao back-end
+        const response = await fetch(`${BASE_URL}/api/users/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message || 'Usuário não encontrado. Por favor, cadastre-se.');
+          return;
+        }
+
+        // Verificar a senha no localStorage (mantendo a lógica original)
+        const userData = localStorage.getItem('user_' + username);
+        if (!userData) {
+          alert('Usuário não encontrado no localStorage. Por favor, cadastre-se.');
+          return;
+        }
+
+        const storedUser = JSON.parse(userData);
+        if (storedUser.password !== password) {
+          alert('Senha incorreta. Tente novamente.');
+          return;
+        }
+
+        // Salvar o usuário completo no localStorage como 'user'
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Login bem-sucedido, redirecionar para lessons.html
+        alert('Login bem-sucedido! Redirecionando para os tópicos...');
+        window.location.href = 'lessons.html';
+      } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        alert('Erro ao conectar ao servidor. Verifique sua conexão e tente novamente.');
       }
-
-      const user = JSON.parse(userData);
-      if (user.password !== password) {
-        alert('Senha incorreta. Tente novamente.');
-        return;
-      }
-
-      // Salvar o usuário logado no localStorage
-      localStorage.setItem('loggedInUser', username);
-
-      // Login bem-sucedido, redirecionar para lessons.html
-      alert('Login bem-sucedido! Redirecionando para os tópicos...');
-      window.location.href = 'lessons.html';
     }
   </script>
 </body>
