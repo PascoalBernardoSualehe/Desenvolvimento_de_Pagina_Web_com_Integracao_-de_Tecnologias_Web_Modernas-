@@ -7,7 +7,7 @@ const routes = require('./routes');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: { origin: 'http://localhost:3000', methods: ['GET', 'POST'] }
+  cors: { origin: 'http://localhost:3000' && 'https://desenvolvimento-de-pagina-web-com-dfk9.onrender.com', methods: ['GET', 'POST'] }
 });
 
 app.use(express.json());
