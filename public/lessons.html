@@ -144,13 +144,21 @@
       try {
         const levels = ['inicial', 'intermédio', 'avançado'];
         for (const level of levels) {
-          console.log(`Buscando materiais para nível: ${level}`);
-          const response = await fetch(`${BASE_URL}/api/materials?level=${level}`);
+          console.log(`Buscando materiais para nível: ${level} em ${BASE_URL}/api/materials?level=${level}`);
+          const response = await fetch(`${BASE_URL}/api/materials?level=${level}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          console.log(`Resposta recebida para nível ${level}: Status ${response.status}`);
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(`Erro ${response.status}: ${errorData.message || 'Falha ao buscar materiais'}`);
           }
           const materials = await response.json();
+          if (!Array.isArray(materials)) {
+            console.error(`Resposta inválida para nível ${level}:`, materials);
+            throw new Error(`Resposta inválida do servidor: esperado array, recebido ${typeof materials}`);
+          }
           console.log(`Materiais recebidos para ${level}:`, materials);
           const availableTopics = [...new Set(materials.flatMap(m => m.topics))];
           const topics = topicConfig[level].filter(t => availableTopics.includes(t));

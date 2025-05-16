@@ -8,9 +8,14 @@ const dataPath = path.join(__dirname, 'data.json');
 // Função para ler o JSON
 async function readData() {
   try {
+    console.log(`Tentando ler arquivo em: ${dataPath}`);
+    await fs.access(dataPath, fs.constants.R_OK); // Verifica se o arquivo existe e é legível
     const data = await fs.readFile(dataPath, 'utf8');
-    return JSON.parse(data);
+    const parsedData = JSON.parse(data);
+    console.log('Arquivo data.json lido com sucesso');
+    return parsedData;
   } catch (err) {
+    console.error(`Erro ao ler data.json: ${err.message}`, err.stack);
     throw new Error(`Erro ao ler data.json: ${err.message}`);
   }
 }
@@ -18,8 +23,11 @@ async function readData() {
 // Função para escrever no JSON
 async function writeData(data) {
   try {
+    console.log(`Escrevendo em: ${dataPath}`);
     await fs.writeFile(dataPath, JSON.stringify(data, null, 2));
+    console.log('Arquivo data.json escrito com sucesso');
   } catch (err) {
+    console.error(`Erro ao escrever em data.json: ${err.message}`, err.stack);
     throw new Error(`Erro ao escrever em data.json: ${err.message}`);
   }
 }
@@ -208,7 +216,7 @@ router.get('/materials', async (req, res) => {
     let materials = Array.isArray(data.materials) ? data.materials : [];
     console.log('Materiais antes do filtro:', materials);
     if (req.query.topic) {
-      materials = materials.filter(m => m.topics.includes(req.query.topic));
+      materials = materials.filter(m => m.topics && Array.isArray(m.topics) && m.topics.includes(req.query.topic));
     }
     if (req.query.level) {
       materials = materials.filter(m => m.level === req.query.level);
