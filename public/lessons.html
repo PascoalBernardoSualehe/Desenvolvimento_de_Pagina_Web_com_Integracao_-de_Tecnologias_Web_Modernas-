@@ -96,7 +96,7 @@
     async function logout() {
       const user = JSON.parse(localStorage.getItem('user'));
       if (user) {
-        await fetch('/api/users/logout', {
+        await fetch('/users/logout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: user.username })
