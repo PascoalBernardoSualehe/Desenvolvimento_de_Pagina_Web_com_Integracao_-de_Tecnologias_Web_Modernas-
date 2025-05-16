@@ -155,6 +155,16 @@
       "format": "PDF",
       "url": "http://localhost:3000/files/exercicios_avancados.pdf",
       "views": 0
+    },
+    {
+      "id": 11,
+      "title": "Vídeo: Introdução à Gramática",
+      "author": "Professor A",
+      "level": "inicial",
+      "topics": ["gramática"],
+      "format": "vídeo",
+      "url": "https://example.com/video1",
+      "views": 0
     }
   ],
   "doubts": [
