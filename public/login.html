@@ -72,7 +72,7 @@
       : 'http://localhost:3000';
 
     // Função para cadastrar um usuário
-    function handleRegister() {
+    async function handleRegister() {
       const username = document.getElementById('registerUsername').value;
       const password = document.getElementById('registerPassword').value;
       const type = document.getElementById('userType').value;
@@ -85,29 +85,46 @@
         return;
       }
 
-      // Verificar se o usuário já existe
-      if (localStorage.getItem('user_' + username)) {
-        alert('Usuário já existe. Escolha outro nome de usuário.');
-        return;
+      try {
+        // Enviar requisição ao back-end para cadastrar no data.json
+        console.log('Enviando requisição de cadastro para:', `${BASE_URL}/api/users`);
+        const response = await fetch(`${BASE_URL}/api/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, type, level, location })
+        });
+
+        const data = await response.json();
+        console.log('Resposta do cadastro:', data);
+
+        if (!data.success) {
+          alert(data.message || 'Erro ao cadastrar usuário. Tente outro nome de usuário.');
+          return;
+        }
+
+        // Salvar os dados no localStorage (lógica original)
+        const user = {
+          username: username,
+          password: password,
+          type: type,
+          level: level,
+          location: location
+        };
+        localStorage.setItem('user_' + username, JSON.stringify(user));
+
+        alert('Cadastro realizado com sucesso! Faça login para continuar.');
+        // Limpar o formulário
+        document.getElementById('registerUsername').value = '';
+        document.getElementById('registerPassword').value = '';
+        document.getElementById('userType').value = 'Estudante';
+        document.getElementById('userLevel').value = 'Inicial';
+        document.getElementById('userLocation').value = '';
+      } catch (error) {
+        console.error('Erro ao cadastrar usuário:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
       }
-
-      // Salvar os dados no localStorage
-      const user = {
-        username: username,
-        password: password,
-        type: type,
-        level: level,
-        location: location
-      };
-      localStorage.setItem('user_' + username, JSON.stringify(user));
-
-      alert('Cadastro realizado com sucesso! Faça login para continuar.');
-      // Limpar o formulário
-      document.getElementById('registerUsername').value = '';
-      document.getElementById('registerPassword').value = '';
-      document.getElementById('userType').value = 'Estudante';
-      document.getElementById('userLevel').value = 'Inicial';
-      document.getElementById('userLocation').value = '';
     }
 
     // Função para realizar o login e redirecionar

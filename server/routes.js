@@ -41,40 +41,42 @@ router.get('/users', async (req, res) => {
   }
 });
 
+router.post('/users', async (req, res) => {
+  console.log('Requisição recebida em /api/users:', req.body);
+  const { username, type, level, location } = req.body;
+  try {
+    const users = JSON.parse(fs.readFileSync(path.join(__dirname, '../data.json')));
+    // Verificar se o usuário já existe
+    if (users.find(u => u.username === username)) {
+      console.log('Usuário já existe:', username);
+      return res.status(400).json({ success: false, message: 'Usuário já existe' });
+    }
+    // Gerar um novo ID
+    const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+    const newUser = {
+      id: newId,
+      username,
+      type,
+      level,
+      location,
+      online: false
+    };
+    users.push(newUser);
+    fs.writeFileSync(path.join(__dirname, '../data.json'), JSON.stringify(users, null, 2));
+    console.log('Usuário cadastrado com sucesso:', username);
+    res.json({ success: true, user: newUser });
+  } catch (error) {
+    console.error('Erro ao cadastrar usuário:', error);
+    res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+  }
+});
+
 router.get('/users/:id', async (req, res) => {
   try {
     const data = await readData();
     const user = data.users.find(u => u.id === parseInt(req.params.id));
     if (user) res.json(user);
     else res.status(404).json({ success: false, message: 'Usuário não encontrado.' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-router.post('/users', async (req, res) => {
-  try {
-    const { username, type, level, location } = req.body;
-    if (!username || !type || !level || !location) {
-      return res.status(400).json({ success: false, message: 'Todos os campos são obrigatórios.' });
-    }
-    const data = await readData();
-    if (data.users.find(u => u.username === username)) {
-      return res.status(400).json({ success: false, message: 'Nome de usuário já existe.' });
-    }
-    const newUser = {
-      id: generateId(data.users),
-      username,
-      password,
-      type,
-      level,
-      location,
-      created_at: new Date().toISOString(),
-      online: false
-    };
-    data.users.push(newUser);
-    await writeData(data);
-    res.json({ success: true, userId: newUser.id });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
